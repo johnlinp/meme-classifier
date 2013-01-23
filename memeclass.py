@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import glob
-import cv
+import cv, cv2
 
 class MemeClassifier:
     def __init__(self, meme_dname):
@@ -15,6 +15,8 @@ class MemeClassifier:
         hist2 = cv.CreateHist([32], cv.CV_HIST_ARRAY, [(0, 180)], 1)
         cv.CalcHist([cv.GetImage(img1)], hist1)
         cv.CalcHist([cv.GetImage(img2)], hist2)
+        cv.NormalizeHist(hist1, 1.0)
+        cv.NormalizeHist(hist2, 1.0)
         inter = cv.CompareHist(hist1, hist2, cv.CV_COMP_INTERSECT)
         return inter
 
@@ -36,17 +38,19 @@ class MemeClassifier:
         gray_hist_inter = self._calc_hist_inter(gray1, gray2)
         hue_hist_inter = self._calc_hist_inter(hue1, hue2)
 
-        return gray_hist_inter + hue_hist_inter
+        return (gray_hist_inter + hue_hist_inter) / 2.0
 
     def classify(self, in_fname):
         in_img = cv.LoadImageM(in_fname)
-        max_sim = 0.0
+        max_sim = 0.7
         max_idx = -1
         for idx, meme_img in enumerate(self._meme_imgs):
             battle = self._calc_sim(meme_img, in_img)
             if battle > max_sim:
                 max_sim = battle
                 max_idx = idx
-        assert max_idx != -1
+        print max_sim
+        if max_idx == -1:
+            return None
         return self._meme_fnames[max_idx]
 
