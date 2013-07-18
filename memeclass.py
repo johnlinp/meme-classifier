@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import re
 import glob
 import cv, cv2
 
 class MemeClassifier:
     def __init__(self, meme_dname):
+        self._meme_dname = meme_dname
         self._meme_fnames = glob.glob(meme_dname + '/*')
         self._meme_imgs = [cv.LoadImageM(fname) for fname in self._meme_fnames]
 
@@ -40,6 +42,12 @@ class MemeClassifier:
 
         return (gray_hist_inter + hue_hist_inter) / 2.0
 
+    def _fname_to_name(self, fname):
+        fname = re.sub('^' + self._meme_dname + '\/', '', fname)
+        fname = re.sub('\.jpg', '', fname)
+        fname = re.sub('-', ' ', fname)
+        return fname
+
     def classify(self, in_fname):
         in_img = cv.LoadImageM(in_fname)
         max_sim = 0.7
@@ -49,8 +57,7 @@ class MemeClassifier:
             if battle > max_sim:
                 max_sim = battle
                 max_idx = idx
-        print max_sim
         if max_idx == -1:
             return None
-        return self._meme_fnames[max_idx]
+        return self._fname_to_name(self._meme_fnames[max_idx])
 
