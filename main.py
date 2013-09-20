@@ -12,4 +12,4 @@ mc = MemeClassifier('templates')
 sys.argv.pop(0)
 for img_fname in sys.argv:
     meme_name = mc.classify(img_fname)
-    print meme_name
+    print img_fname, meme_name
